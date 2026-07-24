@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Liandry Container Registry</title>
+  <meta name="description" content="Liandry is a lightweight container registry hosting OCI images for the liandry.org projects. Pull base images, runtimes, and application images with a single command.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/assets/app.css">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Liandry">
+  <meta property="og:title" content="Liandry Container Registry">
+  <meta property="og:description" content="Lightweight container registry hosting OCI images for the liandry.org projects.">
+  <meta property="og:image" content="/favicon.svg">
+  <meta name="twitter:card" content="summary">
+</head>
+<body>
+<a href="#main" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" onfocus="this.style.cssText='position:absolute;left:.5rem;top:.5rem;width:auto;height:auto;padding:.4rem .7rem;background:var(--bg);border:1px solid var(--accent);border-radius:6px;z-index:50'">Skip to content</a>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a class="brand" href="#main" aria-label="Liandry home">
+      <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+        <rect width="64" height="64" rx="12" fill="#1c5fa8"/>
+        <g fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M32 12 L50 21 L50 43 L32 52 L14 43 L14 21 Z"/>
+          <path d="M14 21 L32 30 L50 21"/>
+          <path d="M32 30 L32 52"/>
+          <path d="M23 16.5 L41 25.5"/>
+        </g>
+      </svg>
+      <span><span class="brand-name">Liandry</span> <span class="brand-sub">/ Registry</span></span>
+    </a>
+
+    <input type="checkbox" id="nav-toggle" aria-hidden="true">
+    <label for="nav-toggle" class="nav-toggle-label" aria-label="Toggle navigation">
+      <span></span>
+    </label>
+
+    <nav class="main-nav" aria-label="Primary">
+      <ul>
+        <li><a href="#images">Images</a></li>
+        <li><a href="#get-started">Get started</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#docs">Docs</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+    </nav>
+
+    <span class="header-cta"><a href="#get-started">Sign in</a></span>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <h1>A clean, fast container registry.</h1>
+      <p class="lead">
+        Liandry hosts OCI-compatible container images for the
+        <strong>liandry.org</strong> open-source projects &mdash; slim base
+        images, hardened runtimes, and ready-to-run applications. Pull what you
+        need and get building.
+      </p>
+      <div class="code-clip" data-copy="docker pull registry.liandry.org/library/app:3.21"><span class="c-comment"># Pull the latest application image</span>
+<span class="c-prompt">$</span> <span class="c-cmd">docker pull registry.liandry.org/library/app:3.21</span></div>
+    </div>
+  </section>
+
+  <div class="wrap">
+
+    <!-- Featured images -->
+    <section id="images" aria-labelledby="images-h">
+      <h2 id="images-h">Featured images</h2>
+      <p>A small set of maintained images. Tags follow semantic versioning; the
+        <code>latest</code> tag always points to the newest stable release.</p>
+
+      <div class="repo-list">
+
+        <article class="repo">
+          <span class="repo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M3 7 L12 12 L21 7"/><path d="M12 12 L12 22"/></svg>
+          </span>
+          <div class="repo-main">
+            <div class="repo-name"><span class="ns">library/</span>base</div>
+            <div class="repo-desc">Minimal Linux base image for building custom images. Roughly 8&nbsp;MiB compressed.</div>
+          </div>
+          <div class="repo-meta">Updated 2 days ago<br>v3.21.2</div>
+        </article>
+
+        <article class="repo">
+          <span class="repo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M3 7 L12 12 L21 7"/><path d="M12 12 L12 22"/></svg>
+          </span>
+          <div class="repo-main">
+            <div class="repo-name"><span class="ns">library/</span>runtime</div>
+            <div class="repo-desc">Compact runtime layer with common CA certificates, timezone data, and a non-root user.</div>
+          </div>
+          <div class="repo-meta">Updated 5 days ago<br>v3.21.2</div>
+        </article>
+
+        <article class="repo">
+          <span class="repo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M3 7 L12 12 L21 7"/><path d="M12 12 L12 22"/></svg>
+          </span>
+          <div class="repo-main">
+            <div class="repo-name"><span class="ns">library/</span>app</div>
+            <div class="repo-desc">Ready-to-run application service. Exposes an HTTP listener by default. See the docs for configuration.</div>
+          </div>
+          <div class="repo-meta">Updated today<br>v3.21.0</div>
+        </article>
+
+        <article class="repo">
+          <span class="repo-icon" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L21 7 L21 17 L12 22 L3 17 L3 7 Z"/><path d="M3 7 L12 12 L21 7"/><path d="M12 12 L12 22"/></svg>
+          </span>
+          <div class="repo-main">
+            <div class="repo-name"><span class="ns">tools/</span>builder</div>
+            <div class="repo-desc">Reproducible build environment with compilers, linters, and packaging tools preinstalled.</div>
+          </div>
+          <div class="repo-meta">Updated 1 week ago<br>v1.9.0</div>
+        </article>
+
+      </div>
+    </section>
+
+    <!-- Get started -->
+    <section id="get-started" aria-labelledby="gs-h">
+      <h2 id="gs-h">Get started</h2>
+      <p>Three commands. No account required to pull public images.</p>
+
+      <ol class="steps">
+        <li>
+          <strong>Point Docker at the registry.</strong> The registry speaks the
+          standard OCI distribution protocol, so no special client is needed.
+          <div class="code-clip" data-copy="docker login registry.liandry.org"><span class="c-prompt">$</span> <span class="c-cmd">docker login registry.liandry.org</span></div>
+        </li>
+        <li>
+          <strong>Pull an image.</strong>
+          <div class="code-clip" data-copy="docker pull registry.liandry.org/library/runtime:3.21"><span class="c-prompt">$</span> <span class="c-cmd">docker pull registry.liandry.org/library/runtime:3.21</span></div>
+        </li>
+        <li>
+          <strong>Run it.</strong>
+          <div class="code-clip" data-copy="docker run --rm -p 8000:8000 registry.liandry.org/library/app:3.21"><span class="c-prompt">$</span> <span class="c-cmd">docker run --rm -p 8000:8000 registry.liandry.org/library/app:3.21</span></div>
+        </li>
+      </ol>
+
+      <p>Prefer a different client? <code>podman</code>, <code>buildah</code>,
+        <code>crane</code>, and <code>skopeo</code> all work the same way &mdash;
+        point them at <code>registry.liandry.org</code>.</p>
+    </section>
+
+    <!-- Features -->
+    <section id="features" aria-labelledby="feat-h">
+      <h2 id="feat-h">Why Liandry</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>OCI-compatible</h3>
+          <p>Implements the Open Container Initiative distribution specification, so any conforming client works out of the box.</p>
+        </div>
+        <div class="card">
+          <h3>Small, reproducible layers</h3>
+          <p>Images are built reproducibly from version-pinned sources and published with attested build metadata.</p>
+        </div>
+        <div class="card">
+          <h3>Fast global pulls</h3>
+          <p>Layered storage with on-disk deduplication keeps pulls quick and bandwidth low, even on constrained links.</p>
+        </div>
+        <div class="card">
+          <h3>Clear versioning</h3>
+          <p>Immutable tags per release plus a moving <code>latest</code> tag. Digests are always available for pinning.</p>
+        </div>
+        <div class="card">
+          <h3>Signed images</h3>
+          <p>Releases are cryptographically signed; verify an image against the published public key before you run it.</p>
+        </div>
+        <div class="card">
+          <h3>No vendor lock-in</h3>
+          <p>Standard protocols, standard formats. Move images in and out freely with the tools you already use.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Docs -->
+    <section id="docs" aria-labelledby="docs-h">
+      <h2 id="docs-h">Documentation</h2>
+      <p>Short, focused guides for the most common tasks.</p>
+      <div class="grid">
+        <div class="card">
+          <h3>Pulling images</h3>
+          <p>How tags and digests work, how to pin a specific build, and how to verify signatures before running an image.</p>
+        </div>
+        <div class="card">
+          <h3>Pushing images</h3>
+          <p>Create a namespace, set up credentials locally, tag your build, and push it to your own area of the registry.</p>
+        </div>
+        <div class="card">
+          <h3>Mirroring & caching</h3>
+          <p>Configure a local pull-through cache to reduce external traffic and speed up builds on your own network.</p>
+        </div>
+        <div class="card">
+          <h3>Garbage collection</h3>
+          <p>Understand how unreferenced layers are reclaimed and how retention is configured per namespace.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Frequently asked questions</h2>
+
+      <details>
+        <summary>Is Liandry free to use?</summary>
+        <p>Yes. Pulling public images is free and does not require an account.
+          Hosting your own images under a personal namespace is also free within
+          reasonable per-user storage limits.</p>
+      </details>
+
+      <details>
+        <summary>Which image types are supported?</summary>
+        <p>Any OCI image and Docker image manifest, including OCI image indexes
+          (multi-architecture images). Schema v2 manifests are supported; the
+          legacy v1 format is not.</p>
+      </details>
+
+      <details>
+        <summary>How do I verify an image?</summary>
+        <p>Every release publishes a SHA-256 digest alongside its tag. Pull by
+          digest (<code>docker pull registry.liandry.org/library/app@sha256:&hellip;</code>)
+          to guarantee you get exactly the bytes that were published.</p>
+      </details>
+
+      <details>
+        <summary>Are images available for multiple architectures?</summary>
+        <p>Yes. The base, runtime, and application images are published as
+          multi-architecture indexes covering <code>amd64</code> and
+          <code>arm64</code>. Your client automatically selects the right variant.</p>
+      </details>
+
+      <details>
+        <summary>How are images built?</summary>
+        <p>All images are built in a clean, reproducible environment from
+          public source. Build metadata and the list of installed packages are
+          attached to each release.</p>
+      </details>
+    </section>
+
+    <!-- About / Contact -->
+    <section id="about" aria-labelledby="about-h">
+      <h2 id="about-h">About</h2>
+      <p>
+        Liandry is a small, independent project that maintains a focused set of
+        container images for everyday development and deployment. It is run as a
+        hobby project and is not affiliated with any company. The source for the
+        published images is available on request.
+      </p>
+      <p>
+        Questions, bug reports, or image requests are welcome by email at
+        <a href="mailto:hello@liandry.org">hello@liandry.org</a>.
+      </p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span>&copy; 2024&ndash;2025 Liandry. All images are provided under the
+      <a href="#about">project license</a>.</span>
+    <nav aria-label="Footer">
+      <a href="#images">Images</a> &middot;
+      <a href="#docs">Docs</a> &middot;
+      <a href="#faq">FAQ</a> &middot;
+      <a href="mailto:hello@liandry.org">Contact</a>
+    </nav>
+  </div>
+</footer>
+
+<script src="/assets/app.js" defer></script>
+</body>
+</html>

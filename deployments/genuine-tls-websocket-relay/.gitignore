@@ -1,0 +1,9 @@
+# Deployment-specific values and credentials.
+.env
+state/
+
+# Preserve reviewed templates and the static website artifact.
+!.env.example
+!mtg.toml.example
+!site/
+!site/**

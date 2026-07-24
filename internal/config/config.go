@@ -23,20 +23,21 @@ type ListConfig struct {
 }
 
 type Config struct {
-	Debug                       TypeBool        `json:"debug"`
-	AllowFallbackOnUnknownDC    TypeBool        `json:"allowFallbackOnUnknownDc"`
-	Secret                      mtglib.Secret   `json:"secret"`
-	BindTo                      TypeHostPort    `json:"bindTo"`
-	ProxyProtocolListener       TypeBool        `json:"proxyProtocolListener"`
-	PreferIP                    TypePreferIP    `json:"preferIp"`
-	AutoUpdate                  TypeBool        `json:"autoUpdate"`
-	DomainFrontingPort          TypePort        `json:"domainFrontingPort"`
-	DomainFrontingIP            TypeIP          `json:"domainFrontingIp"`
-	DomainFrontingProxyProtocol TypeBool        `json:"domainFrontingProxyProtocol"`
-	TolerateTimeSkewness        TypeDuration    `json:"tolerateTimeSkewness"`
-	Concurrency                 TypeConcurrency `json:"concurrency"`
-	PublicIPv4                  TypeIP          `json:"publicIpv4"`
-	PublicIPv6                  TypeIP          `json:"publicIpv6"`
+	Debug                       TypeBool             `json:"debug"`
+	AllowFallbackOnUnknownDC    TypeBool             `json:"allowFallbackOnUnknownDc"`
+	Secret                      mtglib.Secret        `json:"secret"`
+	BindTo                      TypeHostPort         `json:"bindTo"`
+	ProxyProtocolListener       TypeBool             `json:"proxyProtocolListener"`
+	PreferIP                    TypePreferIP         `json:"preferIp"`
+	AutoUpdate                  TypeBool             `json:"autoUpdate"`
+	DomainFrontingPort          TypePort             `json:"domainFrontingPort"`
+	DomainFrontingIP            TypeIP               `json:"domainFrontingIp"`
+	DomainFrontingProxyProtocol TypeBool             `json:"domainFrontingProxyProtocol"`
+	TolerateTimeSkewness        TypeDuration         `json:"tolerateTimeSkewness"`
+	Concurrency                 TypeConcurrency      `json:"concurrency"`
+	PublicIPv4                  TypeIP               `json:"publicIpv4"`
+	PublicIPv6                  TypeIP               `json:"publicIpv6"`
+	WebSocketRelay              WebSocketRelayConfig `json:"websocketRelay"`
 	DomainFronting              struct {
 		IP            TypeIP   `json:"ip"`
 		Port          TypePort `json:"port"`
@@ -133,23 +134,46 @@ func (c *Config) GetDomainFrontingProxyProtocol(defaultValue bool) bool {
 
 func (c *Config) Validate() error {
 	if !c.Secret.Valid() {
-		return fmt.Errorf("invalid secret %s", c.Secret.String())
+		return fmt.Errorf("invalid secret")
 	}
 
 	if c.BindTo.Get("") == "" {
 		return fmt.Errorf("incorrect bind-to parameter %s", c.BindTo.String())
 	}
 
+	if err := c.WebSocketRelay.validate(
+		c.BindTo,
+		c.Stats.Prometheus.Enabled.Get(false),
+		c.Stats.Prometheus.BindTo,
+	); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (c *Config) String() string {
+	raw, err := json.Marshal(c)
+	if err != nil {
+		panic(err)
+	}
+
+	diagnostic := map[string]any{}
+	if err := json.Unmarshal(raw, &diagnostic); err != nil {
+		panic(err)
+	}
+
+	diagnostic["secret"] = "[redacted]"
+	if relay, ok := diagnostic["websocketRelay"].(map[string]any); ok {
+		relay["tokens"] = fmt.Sprintf("[redacted: %d configured]", len(c.WebSocketRelay.Tokens))
+	}
+
 	buf := &bytes.Buffer{}
 	encoder := json.NewEncoder(buf)
 
 	encoder.SetEscapeHTML(false)
 
-	if err := encoder.Encode(c); err != nil {
+	if err := encoder.Encode(diagnostic); err != nil {
 		panic(err)
 	}
 

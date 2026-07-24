@@ -16,6 +16,7 @@ type streamContext struct {
 	clientConn   essentials.Conn
 	telegramConn essentials.Conn
 	streamID     string
+	clientIP     net.IP
 	dc           int
 	logger       Logger
 }
@@ -49,10 +50,15 @@ func (s *streamContext) Close() {
 }
 
 func (s *streamContext) ClientIP() net.IP {
-	return s.clientConn.RemoteAddr().(*net.TCPAddr).IP //nolint: forcetypeassert
+	return s.clientIP
 }
 
-func newStreamContext(ctx context.Context, logger Logger, clientConn essentials.Conn) *streamContext {
+func newStreamContext(
+	ctx context.Context,
+	logger Logger,
+	clientConn essentials.Conn,
+	clientIP net.IP,
+) *streamContext {
 	connIDBytes := make([]byte, ConnectionIDBytesLength)
 
 	if _, err := rand.Read(connIDBytes); err != nil {
@@ -64,6 +70,7 @@ func newStreamContext(ctx context.Context, logger Logger, clientConn essentials.
 		ctx:        ctx,
 		ctxCancel:  cancel,
 		clientConn: clientConn,
+		clientIP:   clientIP,
 		streamID:   base64.RawURLEncoding.EncodeToString(connIDBytes),
 	}
 	streamCtx.logger = logger.

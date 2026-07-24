@@ -23,7 +23,15 @@ type tomlConfig struct {
 	Concurrency                 uint   `toml:"concurrency" json:"concurrency,omitempty"`
 	PublicIPv4                  string `toml:"public-ipv4" json:"publicIpv4,omitempty"`
 	PublicIPv6                  string `toml:"public-ipv6" json:"publicIpv6,omitempty"`
-	DomainFronting              struct {
+	WebSocketRelay              struct {
+		Enabled        bool     `toml:"enabled" json:"enabled,omitempty"`
+		BindTo         string   `toml:"bind-to" json:"bindTo,omitempty"`
+		Path           string   `toml:"path" json:"path,omitempty"`
+		Tokens         []string `toml:"tokens" json:"tokens,omitempty"`
+		MaxConnections *uint    `toml:"max-connections" json:"maxConnections,omitempty"`
+		MaxMessageSize *string  `toml:"max-message-size" json:"maxMessageSize,omitempty"`
+	} `toml:"websocket-relay" json:"websocketRelay,omitempty"`
+	DomainFronting struct {
 		IP            string `toml:"ip" json:"ip,omitempty"`
 		Port          uint   `toml:"port" json:"port,omitempty"`
 		ProxyProtocol bool   `toml:"proxy-protocol" json:"proxyProtocol,omitempty"`

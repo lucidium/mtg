@@ -106,6 +106,26 @@ tolerate-time-skewness = "5s"
 # Otherwise, chose a new DC.
 allow-fallback-on-unknown-dc = false
 
+# Optional authenticated WebSocket relay ingress. This listener accepts plain
+# HTTP only and must stay on loopback behind a genuine TLS reverse proxy.
+# Existing FakeTLS behavior is unchanged while this section is disabled.
+[websocket-relay]
+enabled = false
+# Loopback IP and port used only by the trusted local reverse proxy.
+bind-to = "127.0.0.1:8081"
+# Exact canonical path. Use a deployment-specific random value; credentials
+# must never be embedded in the path.
+path = "/relay/v1/<deployment-specific-random-path>"
+# One to four unique unpadded base64url tokens, each decoding to 32-64 random
+# bytes. Keep both current and next values here during zero-downtime rotation.
+tokens = [
+    "<current-unpadded-base64url-token>",
+    # "<next-token-during-zero-downtime-rotation>",
+]
+# Defaults: 2048 concurrent WebSocket sessions and a 16 MiB message limit.
+max-connections = 2048
+max-message-size = "16MiB"
+
 # This section is relevant to communication with fronting domain. Usually
 # you do not need to setup anything here but there are plenty of cases, especially
 # if you put mtg behind load balancer, when some specific configuration is

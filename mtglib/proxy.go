@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -18,6 +20,72 @@ import (
 	"github.com/9seconds/mtg/v2/mtglib/internal/tls/fake"
 	"github.com/panjf2000/ants/v2"
 )
+
+type ingressMode uint8
+
+const (
+	stockFakeTLS ingressMode = iota
+	webSocketRelay
+)
+
+type authenticatedStreamPolicy struct {
+	clientObfuscator         obfuscation.Obfuscator
+	allowFallbackOnUnknownDC bool
+	handshakeReadCounter     *countingReadConn
+}
+
+type countingReadConn struct {
+	essentials.Conn
+	bytesRead int
+}
+
+func (c *countingReadConn) Read(p []byte) (int, error) {
+	n, err := c.Conn.Read(p)
+	c.bytesRead += n
+
+	return n, err
+}
+
+func (c *countingReadConn) BytesRead() int {
+	return c.bytesRead
+}
+
+func obfuscatedHandshakeFailureCategory(err error) string {
+	var netErr net.Error
+
+	switch {
+	case errors.As(err, &netErr) && netErr.Timeout():
+		return "read-timeout"
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return "peer-closed"
+	case strings.Contains(err.Error(), "unsupported connection type:"):
+		return "unsupported-connection-type"
+	default:
+		return "read-or-parse-error"
+	}
+}
+
+func obfuscatedHandshakeConnectionType(err error) string {
+	const marker = "unsupported connection type: "
+
+	errMessage := err.Error()
+	markerIndex := strings.LastIndex(errMessage, marker)
+	if markerIndex == -1 {
+		return ""
+	}
+
+	connectionType := errMessage[markerIndex+len(marker):]
+	if len(connectionType) != 8 {
+		return ""
+	}
+	for _, value := range connectionType {
+		if !strings.ContainsRune("0123456789abcdef", value) {
+			return ""
+		}
+	}
+
+	return connectionType
+}
 
 // Proxy is an MTPROTO proxy structure.
 type Proxy struct {
@@ -61,10 +129,24 @@ func (p *Proxy) DomainFrontingAddress() string {
 // ServeConn serves a connection. We do not check IP blocklist and concurrency
 // limit here.
 func (p *Proxy) ServeConn(conn essentials.Conn) {
+	clientIP := conn.RemoteAddr().(*net.TCPAddr).IP //nolint: forcetypeassert
+
+	p.serveConn(conn, clientIP, stockFakeTLS)
+}
+
+func (p *Proxy) serveConn(conn essentials.Conn, clientIP net.IP, ingress ingressMode) {
 	p.streamWaitGroup.Add(1)
 	defer p.streamWaitGroup.Done()
 
-	ctx := newStreamContext(p.ctx, p.logger, conn)
+	policy := authenticatedStreamPolicy{}
+	if ingress == webSocketRelay {
+		readCounter := &countingReadConn{Conn: conn}
+		conn = readCounter
+		policy.clientObfuscator = obfuscation.Obfuscator{Secret: nil}
+		policy.handshakeReadCounter = readCounter
+	}
+
+	ctx := newStreamContext(p.ctx, p.logger, conn, clientIP)
 	defer ctx.Close()
 
 	if err := ctx.clientConn.SetDeadline(time.Now().Add(p.handshakeTimeout)); err != nil {
@@ -85,20 +167,44 @@ func (p *Proxy) ServeConn(conn essentials.Conn) {
 		ctx.logger.Info("Stream has been finished")
 	}()
 
-	if !p.doFakeTLSHandshake(ctx) {
-		return
+	switch ingress {
+	case stockFakeTLS:
+		if !p.doFakeTLSHandshake(ctx) {
+			return
+		}
+
+		clientConn, err := p.doppelGanger.NewConn(ctx.clientConn)
+		if err != nil {
+			ctx.logger.InfoError("cannot wrap into doppelganger connection", err)
+			return
+		}
+		defer clientConn.Stop()
+
+		ctx.clientConn = clientConn
+		policy.clientObfuscator = p.clientObfuscatror
+		policy.allowFallbackOnUnknownDC = p.allowFallbackOnUnknownDC
+	case webSocketRelay:
+	default:
+		panic(fmt.Sprintf("unsupported ingress mode: %d", ingress))
 	}
 
-	clientConn, err := p.doppelGanger.NewConn(ctx.clientConn)
-	if err != nil {
-		ctx.logger.InfoError("cannot wrap into doppelganger connection", err)
-		return
-	}
-	defer clientConn.Stop()
+	p.serveAuthenticatedStream(ctx, policy)
+}
 
-	ctx.clientConn = clientConn
+func (p *Proxy) serveAuthenticatedStream(ctx *streamContext, policy authenticatedStreamPolicy) {
+	if err := p.doObfuscatedHandshake(ctx, policy.clientObfuscator); err != nil {
+		if policy.handshakeReadCounter != nil {
+			logger := ctx.logger.
+				BindInt("bytes-read", policy.handshakeReadCounter.BytesRead()).
+				BindStr("failure-category", obfuscatedHandshakeFailureCategory(err))
 
-	if err := p.doObfuscatedHandshake(ctx); err != nil {
+			if connectionType := obfuscatedHandshakeConnectionType(err); connectionType != "" {
+				logger = logger.BindStr("connection-type", connectionType)
+			}
+
+			logger.Debug("WebSocket obfuscated handshake diagnostic")
+		}
+
 		ctx.logger.InfoError("obfuscated handshake is failed", err)
 		return
 	}
@@ -108,7 +214,14 @@ func (p *Proxy) ServeConn(conn essentials.Conn) {
 		return
 	}
 
-	if err := p.doTelegramCall(ctx); err != nil {
+	if policy.handshakeReadCounter != nil && len(p.telegram.GetAddresses(ctx.dc)) == 0 {
+		ctx.logger.
+			BindInt("bytes-read", policy.handshakeReadCounter.BytesRead()).
+			BindStr("failure-category", "invalid-dc").
+			Debug("WebSocket obfuscated handshake diagnostic")
+	}
+
+	if err := p.doTelegramCall(ctx, policy.allowFallbackOnUnknownDC); err != nil {
 		ctx.logger.WarningError("cannot dial to telegram", err)
 		return
 	}
@@ -142,19 +255,8 @@ func (p *Proxy) Serve(listener net.Listener) error {
 		ipAddr := conn.RemoteAddr().(*net.TCPAddr).IP //nolint: forcetypeassert
 		logger := p.logger.BindStr("ip", ipAddr.String())
 
-		if !p.allowlist.Contains(ipAddr) {
+		if !p.allowClientIP(ipAddr) {
 			conn.Close() //nolint: errcheck
-			logger.Info("ip was rejected by allowlist")
-			p.eventStream.Send(p.ctx, NewEventIPAllowlisted(ipAddr))
-
-			continue
-		}
-
-		if p.blocklist.Contains(ipAddr) {
-			conn.Close() //nolint: errcheck
-			logger.Info("ip was blacklisted")
-			p.eventStream.Send(p.ctx, NewEventIPBlocklisted(ipAddr))
-
 			continue
 		}
 
@@ -170,6 +272,26 @@ func (p *Proxy) Serve(listener net.Listener) error {
 			p.eventStream.Send(p.ctx, NewEventConcurrencyLimited())
 		}
 	}
+}
+
+func (p *Proxy) allowClientIP(clientIP net.IP) bool {
+	logger := p.logger.BindStr("ip", clientIP.String())
+
+	if !p.allowlist.Contains(clientIP) {
+		logger.Info("ip was rejected by allowlist")
+		p.eventStream.Send(p.ctx, NewEventIPAllowlisted(clientIP))
+
+		return false
+	}
+
+	if p.blocklist.Contains(clientIP) {
+		logger.Info("ip was blacklisted")
+		p.eventStream.Send(p.ctx, NewEventIPBlocklisted(clientIP))
+
+		return false
+	}
+
+	return true
 }
 
 // Shutdown 'gracefully' shutdowns all connections. Please remember that it
@@ -220,8 +342,11 @@ func (p *Proxy) doFakeTLSHandshake(ctx *streamContext) bool {
 	return true
 }
 
-func (p *Proxy) doObfuscatedHandshake(ctx *streamContext) error {
-	dc, conn, err := p.clientObfuscatror.ReadHandshake(ctx.clientConn)
+func (p *Proxy) doObfuscatedHandshake(
+	ctx *streamContext,
+	clientObfuscator obfuscation.Obfuscator,
+) error {
+	dc, conn, err := clientObfuscator.ReadHandshake(ctx.clientConn)
 	if err != nil {
 		return fmt.Errorf("cannot process client handshake: %w", err)
 	}
@@ -233,11 +358,11 @@ func (p *Proxy) doObfuscatedHandshake(ctx *streamContext) error {
 	return nil
 }
 
-func (p *Proxy) doTelegramCall(ctx *streamContext) error {
+func (p *Proxy) doTelegramCall(ctx *streamContext, allowFallbackOnUnknownDC bool) error {
 	dcid := ctx.dc
 
 	addresses := p.telegram.GetAddresses(dcid)
-	if len(addresses) == 0 && p.allowFallbackOnUnknownDC {
+	if len(addresses) == 0 && allowFallbackOnUnknownDC {
 		ctx.logger = ctx.logger.BindInt("original_dc", dcid)
 		ctx.logger.Warning("unknown DC, fallbacks")
 		ctx.dc = dc.DefaultDC
@@ -251,7 +376,7 @@ func (p *Proxy) doTelegramCall(ctx *streamContext) error {
 	)
 
 	for _, addr := range addresses {
-		conn, err = p.network.Dial(addr.Network, addr.Address)
+		conn, err = p.network.DialContext(ctx, addr.Network, addr.Address)
 		if err == nil {
 			foundAddr = addr
 			break

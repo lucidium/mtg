@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Liandry container mark">
+  <title>Liandry</title>
+  <rect width="64" height="64" rx="12" fill="#1c5fa8"/>
+  <!-- stylized stacked containers -->
+  <g fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 12 L50 21 L50 43 L32 52 L14 43 L14 21 Z"/>
+    <path d="M14 21 L32 30 L50 21"/>
+    <path d="M32 30 L32 52"/>
+    <path d="M23 16.5 L41 25.5"/>
+  </g>
+</svg>

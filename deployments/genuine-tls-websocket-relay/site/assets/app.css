@@ -1,0 +1,326 @@
+/* Liandry Container Registry — app.css
+   Self-contained, no external resources. System font stack. */
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f6f8fa;
+  --bg-code: #f0f2f5;
+  --fg: #1f2328;
+  --fg-muted: #656d76;
+  --border: #d0d7de;
+  --accent: #2473ad;
+  --accent-strong: #1c5fa8;
+  --radius: 6px;
+  --maxw: 1140px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --bg-subtle: #161b22;
+    --bg-code: #1c2128;
+    --fg: #e6edf3;
+    --fg-muted: #9198a1;
+    --border: #30363d;
+    --accent: #4493f8;
+    --accent-strong: #6cb6ff;
+  }
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+h1, h2, h3 { line-height: 1.25; }
+h1 { font-size: 2rem; margin: 0 0 .5em; }
+h2 { font-size: 1.4rem; margin: 2.2em 0 .6em; padding-bottom: .3em; border-bottom: 1px solid var(--border); }
+h3 { font-size: 1.1rem; margin: 1.6em 0 .4em; }
+
+p { margin: 0 0 1em; }
+
+/* ---------- Header ---------- */
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.header-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-height: 56px;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--fg);
+}
+.brand:hover { text-decoration: none; }
+.brand-mark { display: block; width: 28px; height: 28px; flex: 0 0 28px; }
+.brand-name { letter-spacing: -.01em; }
+.brand-sub { color: var(--fg-muted); font-weight: 400; font-size: .85em; }
+
+/* Nav toggle (hidden checkbox pattern) */
+#nav-toggle { display: none; }
+.nav-toggle-label {
+  display: none;
+  cursor: pointer;
+  padding: .4rem .1rem;
+  margin-left: auto;
+  border-radius: var(--radius);
+}
+.nav-toggle-label span,
+.nav-toggle-label span::before,
+.nav-toggle-label span::after {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--fg);
+  position: relative;
+  transition: transform .2s;
+}
+.nav-toggle-label span::before,
+.nav-toggle-label span::after { content: ""; position: absolute; }
+.nav-toggle-label span::before { top: -7px; }
+.nav-toggle-label span::after { top: 7px; }
+
+.main-nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.25rem;
+}
+.main-nav a {
+  color: var(--fg);
+  font-size: .95rem;
+  padding: .2rem 0;
+}
+.main-nav a:hover { color: var(--accent); }
+
+.header-cta {
+  margin-left: auto;
+}
+.header-cta a {
+  display: inline-block;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .3rem .8rem;
+  font-size: .9rem;
+  color: var(--fg);
+}
+.header-cta a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- Layout ---------- */
+.wrap {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  padding: 3.5rem 1rem 3rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-subtle);
+}
+.hero-inner { max-width: var(--maxw); margin: 0 auto; }
+.hero h1 { font-size: 2.4rem; margin-bottom: .4em; }
+.hero .lead { font-size: 1.15rem; color: var(--fg-muted); max-width: 56ch; margin-bottom: 1.6rem; }
+
+.code-clip {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .9rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: .9rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--fg);
+}
+.code-clip .c-comment { color: var(--fg-muted); }
+.code-clip .c-prompt { color: var(--accent-strong); user-select: none; }
+.code-clip .c-cmd { color: var(--fg); }
+
+/* ---------- Section cards ---------- */
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  margin: 1rem 0 1.5rem;
+}
+.card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  padding: 1.1rem 1.2rem;
+  transition: border-color .15s;
+}
+.card:hover { border-color: var(--accent); }
+.card h3 { margin-top: 0; }
+.card p { color: var(--fg-muted); margin-bottom: 0; font-size: .95rem; }
+
+/* ---------- Image list ---------- */
+.repo {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  padding: .85rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.repo:last-child { border-bottom: none; }
+.repo-icon {
+  width: 36px; height: 36px; flex: 0 0 36px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+}
+.repo-main { flex: 1; min-width: 0; }
+.repo-name { font-weight: 600; }
+.repo-name .ns { color: var(--fg-muted); font-weight: 400; }
+.repo-desc { color: var(--fg-muted); font-size: .9rem; margin-top: .15rem; }
+.repo-meta { color: var(--fg-muted); font-size: .85rem; text-align: right; white-space: nowrap; }
+
+/* ---------- FAQ ---------- */
+.faq details {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .9rem 1.1rem;
+  margin-bottom: .6rem;
+  background: var(--bg);
+}
+.faq summary { cursor: pointer; font-weight: 600; }
+.faq summary:focus-visible { outline-offset: 4px; }
+.faq details[open] summary { margin-bottom: .5em; }
+
+/* ---------- Steps ---------- */
+ol.steps { counter-reset: step; list-style: none; padding-left: 0; margin: 1.2rem 0; }
+ol.steps > li {
+  counter-increment: step;
+  position: relative;
+  padding: 0 0 1.2rem 2.6rem;
+}
+ol.steps > li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 0;
+  width: 1.8rem; height: 1.8rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: .9rem;
+  font-weight: 700;
+}
+ol.steps code {
+  background: var(--bg-code);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: .1rem .35rem;
+  font-size: .85em;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- Copy button (progressive enhancement) ---------- */
+.copy-btn {
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--fg-muted);
+  border-radius: 4px;
+  padding: .1rem .45rem;
+  font-size: .8em;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: .4rem;
+  vertical-align: middle;
+}
+.copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+.copy-btn.is-copied { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- Footer ---------- */
+.site-footer {
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+  margin-top: 3rem;
+}
+.footer-inner {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--fg-muted);
+  font-size: .9rem;
+}
+.footer-inner a { color: var(--fg-muted); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 760px) {
+  .nav-toggle-label { display: block; }
+  .header-cta { display: none; }
+  .main-nav {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .25s ease;
+  }
+  .main-nav ul { flex-direction: column; gap: 0; padding: .3rem 1rem 1rem; }
+  .main-nav li a { display: block; padding: .55rem 0; border-top: 1px solid var(--border); }
+  .main-nav li:first-child a { border-top: none; }
+  #nav-toggle:checked ~ .main-nav { max-height: 400px; }
+  .hero { padding: 2.5rem 1rem 2rem; }
+  .hero h1 { font-size: 1.8rem; }
+  .repo-meta { display: none; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.7rem; }
+  h2 { font-size: 1.2rem; }
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

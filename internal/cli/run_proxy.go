@@ -284,8 +284,10 @@ func runProxy(conf *config.Config, version string) error { //nolint: funlen
 
 	listener, err := utils.NewListener(conf.BindTo.Get(""), 0)
 	if err != nil {
+		proxy.Shutdown()
 		return fmt.Errorf("cannot start proxy: %w", err)
 	}
+	defer listener.Close() //nolint: errcheck
 
 	if conf.ProxyProtocolListener.Get(false) {
 		listener = &proxyprotocol.ListenerAdapter{
@@ -295,13 +297,32 @@ func runProxy(conf *config.Config, version string) error { //nolint: funlen
 		}
 	}
 
-	ctx := utils.RootContext()
+	process := &proxyProcess{
+		proxy:          proxy,
+		legacyListener: listener,
+	}
 
-	go proxy.Serve(listener) //nolint: errcheck
+	if conf.WebSocketRelay.Enabled.Get(false) {
+		handler, err := proxy.NewWebSocketRelayHandler(mtglib.WebSocketRelayOptions{
+			Path:           conf.WebSocketRelay.Path,
+			Tokens:         conf.WebSocketRelay.Tokens,
+			MaxConnections: int(conf.WebSocketRelay.GetMaxConnections()),
+			MaxMessageSize: int64(conf.WebSocketRelay.GetMaxMessageSize()),
+		})
+		if err != nil {
+			proxy.Shutdown()
+			return fmt.Errorf("cannot create websocket relay handler: %w", err)
+		}
 
-	<-ctx.Done()
-	listener.Close() //nolint: errcheck
-	proxy.Shutdown()
+		webSocketListener, err := net.Listen("tcp", conf.WebSocketRelay.BindTo.Get(""))
+		if err != nil {
+			proxy.Shutdown()
+			return fmt.Errorf("cannot start websocket relay listener: %w", err)
+		}
 
-	return nil
+		process.webSocketListener = webSocketListener
+		process.webSocketHTTPServer = newWebSocketRelayHTTPServer(handler)
+	}
+
+	return process.run(utils.RootContext())
 }

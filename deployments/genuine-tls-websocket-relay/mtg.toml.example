@@ -1,0 +1,41 @@
+# Keep diagnostics concise in normal operation. Credential values are redacted
+# by mtg, but debug output is still unnecessary unless troubleshooting.
+debug = false
+
+# mtg still requires an independent legacy FakeTLS secret even when its legacy
+# listener is loopback-only. Generate a unique value as documented in README.md;
+# never reuse the WebSocket bearer token here.
+secret = "<replace-with-generated-ee-secret>"
+
+# The legacy FakeTLS ingress is disabled publicly by binding it to loopback.
+# Change this deliberately only if you also want to expose that independent
+# service and have configured the VPS firewall accordingly.
+bind-to = "127.0.0.1:3128"
+concurrency = 8192
+prefer-ip = "prefer-ipv4"
+allow-fallback-on-unknown-dc = false
+
+[websocket-relay]
+enabled = true
+bind-to = "127.0.0.1:8081"
+# Must exactly match RELAY_PATH in .env.
+path = "/relay/v1/replace-with-the-same-random-path"
+# One to four unique unpadded base64url tokens. A token must decode to 32-64
+# random bytes. Keep old and new values together only during rotation.
+tokens = [
+    "<replace-with-generated-unpadded-base64url-token>",
+]
+max-connections = 2048
+max-message-size = "16MiB"
+
+[network.timeout]
+tcp = "5s"
+http = "10s"
+idle = "5m"
+handshake = "10s"
+
+[network.keep-alive]
+disabled = false
+idle = "15s"
+interval = "15s"
+count = 9

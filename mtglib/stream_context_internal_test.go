@@ -29,13 +29,8 @@ func (suite *StreamContextTestSuite) SetupTest() {
 	suite.ctxCancel = cancel
 	suite.connMock = &testlib.EssentialsConnMock{}
 
-	addr := &net.TCPAddr{
-		IP:   net.ParseIP("10.0.0.10"),
-		Port: 6676,
-	}
-	suite.connMock.On("RemoteAddr").Return(addr)
-
-	suite.ctx = newStreamContext(ctx, suite.logger, suite.connMock)
+	clientIP := net.ParseIP("10.0.0.10")
+	suite.ctx = newStreamContext(ctx, suite.logger, suite.connMock, clientIP)
 }
 
 func (suite *StreamContextTestSuite) TearDownTest() {

@@ -1,0 +1,3 @@
+# No automated indexing. Not intended for discovery or archival.
+User-agent: *
+Disallow: /
